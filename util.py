@@ -6,13 +6,11 @@ import pywintypes
 import win32con
 import win32file
 
+from exif import Image
 from PIL import Image
 from win32com.propsys import propsys, pscon
 from win32comext.shell import shellcon
 
-'''
-pip install pypiwin32, Pillow
-'''
 
 def get_media_date_encoded(path: str):
     properties = propsys.SHGetPropertyStoreFromParsingName(path, None, shellcon.GPS_READWRITE, propsys.IID_IPropertyStore)
@@ -35,9 +33,11 @@ def get_photo_take_time(path: str):
         img = Image.open(path)
         exif = img._getexif()
         date = exif[0x9003]
+        print('date', date)
         return datetime.strptime(date, '%Y:%m:%d %H:%M:%S')
     except:
         return None
+
 
 
 def change_file_time(filename: str, timestamp: float):
@@ -56,3 +56,11 @@ def change_file_time(filename: str, timestamp: float):
     modified_time = wintime
     win32file.SetFileTime(winfile, create_time, last_access_time, modified_time)
     winfile.close()
+
+
+def set_photo_take_time(path: str, datetime: datetime):
+    with open(path, 'rb') as imfp:
+        img = Image(imfp)
+        img.datetime_original = datetime.strftime('%Y:%m:%d %H:%M:%S')
+    with open(path, 'wb') as imfp:
+        imfp.write(img.get_file())

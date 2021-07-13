@@ -1,0 +1,4 @@
+pypiwin32
+Pillow
+pytz
+exif
